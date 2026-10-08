@@ -1,0 +1,32 @@
+# Прямые зависимости (версии проверены на Windows 11, Python 3.11.17). Полный слепок: requirements.lock
+# torch/torchaudio ставятся отдельно (CPU или CUDA) — см. scripts/install.ps1
+fastapi==0.142.4
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32
+pyyaml==6.0.3
+httpx==0.28.1
+psutil==7.2.2
+numpy==2.4.6
+scipy==1.17.1
+pandas==3.0.6
+pyarrow==25.0.1
+av==18.1.0
+soxr==1.1.0
+soundfile==0.14.0
+dxcam==0.3.0
+soundcard==0.4.6
+mediapipe==1.1.0
+librosa==0.11.0
+praat-parselmouth==0.4.7
+opensmile==2.6.0
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+onnxruntime==1.30.0
+rapidfuzz==3.14.6
+funasr==1.4.16
+modelscope==1.40.1
+# разработка
+pytest==9.1.1
+pytest-asyncio==1.4.0
+ruff==0.16.10

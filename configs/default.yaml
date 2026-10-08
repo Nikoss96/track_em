@@ -1,0 +1,134 @@
+# Multimodal Behavior Analyzer — конфигурация по умолчанию.
+# Профили (configs/profiles/*.yaml) и параметры сессии накладываются поверх.
+
+app:
+  data_dir: data            # относительно корня проекта
+  models_dir: .cache/models
+  host: 127.0.0.1
+  port: 8000
+
+profile: auto                # auto | cpu | gpu
+
+capture:
+  video_fps: 30
+  audio_chunk_ms: 200        # 100–250 ms
+  preview_fps: 2
+  preview_width: 480
+  silence_dbfs: -55          # ниже — «тишина»
+  blank_frame_std: 2.0       # std яркости ниже — «нет изображения»
+  status_interval_ms: 1000
+
+queues:
+  video: 4                   # drop_oldest
+  audio: 400                 # lossless (≈80 c при 200 ms чанках)
+  text: 64                   # dedupe
+  results: 2000
+
+inference:
+  max_parallel: 2            # слоты InferenceGate
+  threads: 4
+
+modules:
+  face:
+    enabled: true
+    backend: mediapipe
+    analysis_fps: 10
+    window_ms: 1000
+    model_url: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+    min_face_presence: 0.5
+  prosody:
+    enabled: true
+    window_ms: 1000
+    hop_ms: 500
+    context_window_ms: 4000
+    f0_min_hz: 75
+    f0_max_hz: 500
+    pause_min_ms: 250
+    egemaps: true
+  voice_emotion:
+    enabled: true
+    backend: emotion2vec
+    model: emotion2vec/emotion2vec_plus_base
+    hub: hf
+    device: cpu
+    window_ms: 4000
+    hop_ms: 2000
+    min_speech_ms: 1500
+    save_embedding: true
+  speech:
+    enabled: true
+    backend: faster_whisper
+    model: small
+    device: auto
+    compute_type: auto        # int8 на CPU, float16 на CUDA
+    language: ru
+    beam_size: 1
+    vad_threshold: 0.5
+    min_silence_ms: 600
+    min_speech_ms: 300
+    max_segment_ms: 12000
+    partial_interval_ms: 2000
+    word_timestamps: true
+  text:
+    enabled: true
+    min_chars: 12
+  transactional:
+    enabled: true
+    min_words: 4
+
+llm:
+  backend: ollama             # ollama (локально) | openai (внешний сервис)
+  timeout_s: 90
+  temperature: 0
+  # --- Ollama ---
+  url: http://127.0.0.1:11434
+  model: qwen3:4b
+  max_tokens: 512
+  think: false
+  num_ctx: 4096
+  # --- OpenAI API ---
+  # ВНИМАНИЕ: в OpenAI уходит текст (эталонные фрагменты, транскрипты ответов, вопрос). Аудио/видео не отправляются.
+  allow_external: false       # явное согласие на отправку текста во внешний сервис
+  openai_url: https://api.openai.com/v1
+  openai_model: gpt-4.1-mini
+  openai_max_tokens: 1200     # лимит выходных токенов (у reasoning-моделей включает рассуждения)
+  openai_reasoning_effort: null   # для reasoning-моделей (gpt-5*): minimal | low
+  openai_max_retries: 4
+  session_budget_usd: 2.0     # лимит стоимости LLM на сессию; 0 — без лимита
+  # Тарифы USD за 1M токенов (Standard; developers.openai.com/api/docs/pricing, проверено 2026-10-08).
+  # Обновляйте при изменении цен — стоимость считается по фактическому usage из ответов API.
+  pricing:
+    gpt-4.1-mini: {input: 0.40, cached_input: 0.10, output: 1.60}
+    gpt-4.1-nano: {input: 0.10, cached_input: 0.025, output: 0.40}
+    gpt-4.1: {input: 2.00, cached_input: 0.50, output: 8.00}
+    gpt-4o-mini: {input: 0.15, cached_input: 0.075, output: 0.60}
+    gpt-5-mini: {input: 0.25, cached_input: 0.025, output: 2.00}
+    gpt-5-nano: {input: 0.05, cached_input: 0.005, output: 0.40}
+    gpt-5.4-mini: {input: 0.75, cached_input: 0.075, output: 4.50}
+    gpt-5.4-nano: {input: 0.20, cached_input: 0.02, output: 1.25}
+    gpt-5.6-luna: {input: 0.20, cached_input: 0.02, output: 1.20}
+    gpt-6-luna: {input: 0.10, cached_input: 0.01, output: 0.50}
+
+fusion:
+  window_ms: 5000
+  step_ms: 1000
+  late_horizon_ms: 30000
+
+scoring:
+  normalization_version: "0.1"
+  # Нормализация 0–100 разрешена только для явно описанных процедур.
+  normalizations:
+    reading_accuracy:
+      method: "100*max(0,1-WER)"
+      source: "ТЗ §6"
+  composite:
+    enabled: false
+    min_available: 2
+    weights:
+      reading_accuracy: 1.0
+
+storage:
+  save_media: false
+  parquet: true
+  retention_days: 0          # 0 — хранить бессрочно; иначе каталоги сессий старше N дней удаляются при старте
+

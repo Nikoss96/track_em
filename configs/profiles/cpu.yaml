@@ -1,0 +1,13 @@
+# Профиль без NVIDIA GPU (машина разработки: Intel Iris Xe, 16 GB RAM).
+inference:
+  max_parallel: 2
+modules:
+  face:
+    analysis_fps: 8
+  speech:
+    model: small
+    device: cpu
+    compute_type: int8
+  voice_emotion:
+    device: cpu
+    hop_ms: 3000

@@ -1,0 +1,29 @@
+[project]
+name = "multimodal-behavior-analyzer"
+version = "0.1.0"
+description = "Локальный исследовательский анализатор мультимодального поведения"
+requires-python = ">=3.11,<3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: тесты с реальными моделями (долгие)",
+    "live: требует реальных Windows-устройств",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+src = ["backend", "tests"]
+extend-exclude = [".venv", ".cache", "frontend", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "BLE"]
+ignore = ["E501", "B008", "E741", "UP042", "B027"]  # E741: S/D/I — нотация WER
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]

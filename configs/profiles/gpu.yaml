@@ -1,0 +1,29 @@
+# Профиль целевой машины: RTX 3080 (10 GB VRAM), i9-12900KF (16C/24T), 32 GB RAM.
+# Бюджет VRAM (оценка, проверить nvidia-smi):
+#   whisper large-v3-turbo int8_float16 ≈ 1.6 GB
+#   emotion2vec+ large (fp32)          ≈ 1.3 GB
+#   Qwen3-8B Q4_K_M (Ollama, ctx 4096)  ≈ 6.0 GB
+#   MediaPipe — CPU
+#   Итого ≈ 9 GB из 10 GB; при нехватке — llm.model: qwen3:4b (≈3 GB).
+inference:
+  max_parallel: 3            # GPU-задачи сериализуются InferenceGate, CPU-задачи идут параллельно
+  threads: 8                 # из 24 потоков; остальное — захват, MediaPipe, ОС
+modules:
+  face:
+    analysis_fps: 10
+  speech:
+    model: large-v3-turbo
+    device: cuda
+    compute_type: int8_float16
+    beam_size: 5
+    partial_interval_ms: 1500
+  voice_emotion:
+    model: emotion2vec/emotion2vec_plus_large
+    device: cuda
+    hop_ms: 2000
+llm:
+  model: qwen3:8b
+  num_ctx: 4096
+queues:
+  audio: 600
+

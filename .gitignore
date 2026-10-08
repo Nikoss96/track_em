@@ -1,0 +1,13 @@
+.venv/
+.cache/
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+frontend/node_modules/
+frontend/dist/
+configs/user.yaml
+configs/secrets.yaml
+.claude/settings.local.json
+tests/fixtures/*.part
